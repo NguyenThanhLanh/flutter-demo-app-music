@@ -97,6 +97,13 @@ class _HomeTabPageState extends State<HomeTabPage> {
     );
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _viewModel.songStream.close();
+    super.dispose();
+  }
+
   Widget getBody(){
     bool showLoading = songs.isEmpty;
     if(showLoading){
@@ -128,8 +135,9 @@ class _HomeTabPageState extends State<HomeTabPage> {
   }
 
   Widget GetItemSong(int index){
-    return Center(
-      child: Text("${songs[index].title}"),
+    return _SongItemSection(
+      parent: this,
+      song: songs[index],
     );
   }
 
@@ -140,5 +148,57 @@ class _HomeTabPageState extends State<HomeTabPage> {
       });
     });
   }
+
+  void showBottomSheet() {
+
+  }
+
+  void navigateTab(Song song){
+    Navigator.push(context, CupertinoPageRoute(builder: (context){
+      return NowPlaying(
+        songs: songs,
+        playingSong: song,
+      )
+    }));
+  }
 }
 
+class _SongItemSection extends StatelessWidget{
+  final _HomeTabPageState parent;
+  final Song song;
+
+  _SongItemSection({required this.parent,required this.song});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.only(
+        left: 24,
+        right: 10,
+      ),
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: FadeInImage.assetNetwork(
+          placeholder: "assets/images.jpg",
+          image: song.image,
+          width: 48,
+          height: 48,
+          imageErrorBuilder: (context, error, stackTrace){
+            return Image.asset('assets/images.jpg', width: 48,height: 48,);
+          },
+        ),
+      ),
+      title: Text(song.title),
+      subtitle: Text(song.artist),
+      trailing: IconButton(
+        icon: Icon(Icons.more_horiz),
+        onPressed: (){
+          parent.showBottomSheet();
+        },
+      ),
+      onTap: (){
+        parent.navigateTab(song);
+      },
+    );
+  }
+}
